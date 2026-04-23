@@ -1,0 +1,820 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NexBank ATM — Secure Banking Terminal</title>
+    <meta
+      name="description"
+      content="NexBank ATM — ACID-compliant banking with a modern FinTech dashboard."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- auth scree-->
+    <div id="screen-login" class="screen active">
+      <div class="auth-bg"></div>
+
+      <div class="auth-wrap">
+        <!-- brnad -->
+        <div class="brand">
+          <div class="brand-icon">
+            <svg viewBox="0 0 36 36" fill="none">
+              <rect width="36" height="36" rx="10" fill="url(#bg1)" />
+              <path
+                d="M18 6L30 12V24L18 30L6 24V12L18 6Z"
+                stroke="white"
+                stroke-width="1.5"
+                fill="none"
+              />
+              <path
+                d="M18 12L24 15.5V22.5L18 26L12 22.5V15.5L18 12Z"
+                fill="white"
+                opacity="0.85"
+              />
+              <defs>
+                <linearGradient id="bg1" x1="0" y1="0" x2="36" y2="36">
+                  <stop stop-color="#6366f1" />
+                  <stop offset="1" stop-color="#0ea5e9" />
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <div class="brand-text">
+            <span class="brand-name">VUBank</span>
+            <span class="brand-sub">ATM Terminal</span>
+          </div>
+        </div>
+
+        <!-- Auth Card -->
+        <div class="auth-card">
+          <!-- Tabs -->
+          <div class="auth-tabs">
+            <button
+              class="auth-tab active"
+              id="tab-login"
+              onclick="switchTab('login')"
+            >
+              Login
+            </button>
+            <button
+              class="auth-tab"
+              id="tab-register"
+              onclick="switchTab('register')"
+            >
+              Create Account
+            </button>
+          </div>
+
+          <!-- ── LOGIN FORM ── -->
+          <form id="login-form" class="auth-form" novalidate>
+            <div class="field">
+              <label for="card-input">Card Number</label>
+              <input
+                id="card-input"
+                type="text"
+                placeholder="4532 XXXX XXXX XXXX"
+                maxlength="19"
+                autocomplete="off"
+                inputmode="numeric"
+              />
+            </div>
+
+            <div class="field">
+              <label for="pin-input">4-Digit PIN</label>
+              <div class="pin-wrap">
+                <input
+                  id="pin-input"
+                  type="password"
+                  placeholder="••••"
+                  maxlength="4"
+                  inputmode="numeric"
+                  autocomplete="current-password"
+                />
+                <button
+                  type="button"
+                  id="pin-toggle"
+                  class="eye-btn"
+                  aria-label="Show PIN"
+                >
+                  <svg
+                    id="eye-show"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                  >
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                  <svg
+                    id="eye-hide"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    style="display: none"
+                  >
+                    <path
+                      d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24M1 1l22 22"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div
+              id="login-error"
+              class="msg msg-error"
+              style="display: none"
+            ></div>
+
+            <button type="submit" class="btn-main" id="login-btn">
+              <span class="btn-label">Login</span>
+              <div class="spinner" style="display: none"></div>
+            </button>
+
+            <div class="demo-section">
+              <p class="demo-title">Demo Accounts</p>
+              <div class="demo-list">
+                <button
+                  type="button"
+                  class="demo-item"
+                  data-card="4532 1234 5678 9012"
+                  data-pin="1234"
+                >
+                  <div class="demo-avatar">AJ</div>
+                  <div>
+                    <p class="demo-name">Amruta patil</p>
+                    <p class="demo-card">4532 •••• •••• 9012 · PIN: 1234</p>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  class="demo-item"
+                  data-card="4532 9876 5432 1000"
+                  data-pin="5678"
+                >
+                  <div class="demo-avatar ps">PS</div>
+                  <div>
+                    <p class="demo-name">Priya Sharma</p>
+                    <p class="demo-card">4532 •••• •••• 1000 · PIN: 5678</p>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  class="demo-item"
+                  data-card="4532 1111 2222 3333"
+                  data-pin="9999"
+                >
+                  <div class="demo-avatar ml">ML</div>
+                  <div>
+                    <p class="demo-name">Rupali mule</p>
+                    <p class="demo-card">4532 •••• •••• 3333 · PIN: 9999</p>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <!-- Dynamically loaded registered accounts -->
+            <div
+              class="demo-section"
+              id="registered-section"
+              style="display: none"
+            >
+              <p class="demo-title">
+                Registered Accounts
+                <span class="reg-count-badge" id="reg-count"></span>
+              </p>
+              <div class="demo-list" id="registered-list"></div>
+            </div>
+          </form>
+
+          <!-- ── REGISTER FORM ── -->
+          <form
+            id="register-form"
+            class="auth-form"
+            novalidate
+            style="display: none"
+          >
+            <div class="field">
+              <label for="reg-name">Full Name</label>
+              <input
+                id="reg-name"
+                type="text"
+                placeholder="e.g. Ravi Kumar"
+                autocomplete="name"
+              />
+            </div>
+
+            <div class="field">
+              <label for="reg-type">Account Type</label>
+              <select id="reg-type">
+                <option value="savings">Savings Account</option>
+                <option value="current">Current Account</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="reg-pin">Set 4-Digit PIN</label>
+              <input
+                id="reg-pin"
+                type="password"
+                placeholder="••••"
+                maxlength="4"
+                inputmode="numeric"
+              />
+            </div>
+
+            <div class="field">
+              <label for="reg-confirm">Confirm PIN</label>
+              <input
+                id="reg-confirm"
+                type="password"
+                placeholder="••••"
+                maxlength="4"
+                inputmode="numeric"
+              />
+            </div>
+
+            <div
+              id="reg-error"
+              class="msg msg-error"
+              style="display: none"
+            ></div>
+
+            <button type="submit" class="btn-main btn-green" id="register-btn">
+              <span class="btn-label">Create Account</span>
+              <div class="spinner" style="display: none"></div>
+            </button>
+          </form>
+        </div>
+
+        <p class="footer-note">
+          🔒 256-bit encrypted · ACID-compliant transactions
+        </p>
+      </div>
+    </div>
+
+    <!--  regustration success model   -->
+    <div id="reg-success-modal" class="modal-overlay" style="display: none">
+      <div class="modal-box">
+        <div class="modal-icon success-icon">✓</div>
+        <h3>Account Created!</h3>
+        <p class="modal-sub">
+          Save your card number — you'll need it to login.
+        </p>
+        <div class="card-reveal">
+          <p class="card-reveal-label">Your Card Number</p>
+          <p class="card-reveal-number" id="new-card-number">
+            4532 XXXX XXXX XXXX
+          </p>
+          <button type="button" class="copy-btn" id="copy-card-btn">
+            📋 Copy
+          </button>
+        </div>
+        <div class="modal-meta" id="reg-modal-meta"></div>
+        <button class="btn-main" id="reg-success-close">Go to Login</button>
+      </div>
+    </div>
+
+    <!-- dashbord screen -->
+    <div id="screen-dashboard" class="screen">
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-top">
+          <div class="brand brand-sm">
+            <div class="brand-icon sm">
+              <svg viewBox="0 0 36 36" fill="none">
+                <rect width="36" height="36" rx="10" fill="url(#bg2)" />
+                <path
+                  d="M18 6L30 12V24L18 30L6 24V12L18 6Z"
+                  stroke="white"
+                  stroke-width="1.5"
+                  fill="none"
+                />
+                <path
+                  d="M18 12L24 15.5V22.5L18 26L12 22.5V15.5L18 12Z"
+                  fill="white"
+                  opacity="0.85"
+                />
+                <defs>
+                  <linearGradient id="bg2" x1="0" y1="0" x2="36" y2="36">
+                    <stop stop-color="#6366f1" />
+                    <stop offset="1" stop-color="#0ea5e9" />
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+            <span class="brand-name">NexBank</span>
+          </div>
+          <button class="sidebar-close" id="sidebar-close">✕</button>
+        </div>
+
+        <div class="user-info-block">
+          <div class="user-avatar" id="user-avatar">AJ</div>
+          <div>
+            <p class="user-fullname" id="sidebar-name">Alex Johnson</p>
+            <p class="user-cardno" id="sidebar-card">•••• 9012</p>
+            <span class="badge" id="sidebar-type">Savings</span>
+          </div>
+        </div>
+
+        <nav class="nav">
+          <button
+            class="nav-btn active"
+            data-panel="overview"
+            id="nav-overview"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <rect x="3" y="3" width="7" height="7" rx="1" />
+              <rect x="14" y="3" width="7" height="7" rx="1" />
+              <rect x="3" y="14" width="7" height="7" rx="1" />
+              <rect x="14" y="14" width="7" height="7" rx="1" />
+            </svg>
+            Overview
+          </button>
+          <button class="nav-btn" data-panel="withdraw" id="nav-withdraw">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path d="M12 5v14M19 12l-7 7-7-7" />
+            </svg>
+            Withdraw
+          </button>
+          <button class="nav-btn" data-panel="deposit" id="nav-deposit">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path d="M12 19V5M5 12l7-7 7 7" />
+            </svg>
+            Deposit
+          </button>
+          <button class="nav-btn" data-panel="transfer" id="nav-transfer">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path d="M5 12h14M15 6l6 6-6 6" />
+            </svg>
+            Transfer
+          </button>
+          <button class="nav-btn" data-panel="history" id="nav-history">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 6v6l4 2" />
+            </svg>
+            History
+          </button>
+        </nav>
+
+        <div class="sidebar-footer">
+          <div class="timer-row">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              width="13"
+              height="13"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 6v6l4 2" />
+            </svg>
+            Session: <span id="session-timer" class="timer-val">30:00</span>
+          </div>
+          <button class="logout-btn" id="logout-btn">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path
+                d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"
+              />
+            </svg>
+            Logout
+          </button>
+        </div>
+      </aside>
+
+      <main class="main" id="main-content">
+        <header class="topbar">
+          <button class="hamburger" id="hamburger">
+            <span></span><span></span><span></span>
+          </button>
+          <div class="topbar-greet">
+            <span id="topbar-greeting">Good morning</span>,
+            <strong id="topbar-name">Alex</strong> 👋
+          </div>
+          <div class="topbar-right">
+            <div class="live-dot-wrap">
+              <div class="live-dot"></div>
+              <span>LIVE</span>
+            </div>
+            <div class="clock" id="current-time"></div>
+          </div>
+        </header>
+
+        <!-- OVERVIEW -->
+        <section id="panel-overview" class="panel active">
+          <div class="balance-card">
+            <div class="balance-card-top">
+              <div>
+                <p class="bal-label">Available Balance</p>
+                <p class="bal-hint">Updated <span id="balance-time">—</span></p>
+              </div>
+              <button class="refresh-btn" id="refresh-balance" title="Refresh">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  width="16"
+                  height="16"
+                >
+                  <path d="M23 4v6h-6M1 20v-6h6" />
+                  <path
+                    d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"
+                  />
+                </svg>
+              </button>
+            </div>
+            <p class="bal-amount">
+              <span class="bal-sym">₹</span><span id="balance-amount">——</span>
+            </p>
+            <div class="bal-chips">
+              <span class="chip" id="ov-account-type">Savings Account</span>
+            </div>
+
+            <!-- Full card number row for easy sharing/copying -->
+            <div class="card-share-row">
+              <div class="card-share-left">
+                <span class="card-share-label">Your Card Number</span>
+                <span class="card-share-number mono" id="ov-card-number-full">4532 •••• •••• ••••</span>
+              </div>
+              <button class="copy-card-btn" id="copy-my-card" title="Copy card number">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="15" height="15"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                <span id="copy-my-card-label">Copy</span>
+              </button>
+            </div>
+          </div>
+
+          <p class="section-label">Quick Actions</p>
+          <div class="quick-grid">
+            <button class="quick-btn" data-panel="withdraw">
+              <div class="quick-icon withdraw">↓</div>
+              <span>Withdraw</span>
+            </button>
+            <button class="quick-btn" data-panel="deposit">
+              <div class="quick-icon deposit">↑</div>
+              <span>Deposit</span>
+            </button>
+            <button class="quick-btn" data-panel="transfer">
+              <div class="quick-icon transfer">→</div>
+              <span>Transfer</span>
+            </button>
+            <button class="quick-btn" data-panel="history">
+              <div class="quick-icon history">🕐</div>
+              <span>History</span>
+            </button>
+          </div>
+
+          <div class="section-row">
+            <p class="section-label mb0">Recent Transactions</p>
+            <button class="link-btn" data-panel="history">View all →</button>
+          </div>
+          <div class="tx-card" id="mini-statement">
+            <div class="skel-wrap">
+              <div class="skel"></div>
+              <div class="skel"></div>
+              <div class="skel"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- WITHDRAW -->
+        <section id="panel-withdraw" class="panel">
+          <div class="panel-head">
+            <h2>Withdraw Cash</h2>
+            <p>Multiples of ₹100 · Max ₹50,000 per transaction</p>
+          </div>
+          <div class="tx-layout">
+            <div class="tx-card form-card">
+              <p class="chip-label">Quick Amount</p>
+              <div class="amt-chips">
+                <button type="button" class="amt-chip" data-amount="500">
+                  ₹500
+                </button>
+                <button type="button" class="amt-chip" data-amount="1000">
+                  ₹1,000
+                </button>
+                <button type="button" class="amt-chip" data-amount="2000">
+                  ₹2,000
+                </button>
+                <button type="button" class="amt-chip" data-amount="5000">
+                  ₹5,000
+                </button>
+                <button type="button" class="amt-chip" data-amount="10000">
+                  ₹10,000
+                </button>
+                <button type="button" class="amt-chip" data-amount="20000">
+                  ₹20,000
+                </button>
+              </div>
+              <hr class="divider" />
+              <div class="field">
+                <label for="withdraw-amount">Custom Amount (₹)</label>
+                <div class="rupee-wrap">
+                  <span class="rupee">₹</span
+                  ><input
+                    type="number"
+                    id="withdraw-amount"
+                    class="big-input"
+                    placeholder="0"
+                    min="100"
+                    max="50000"
+                    step="100"
+                  />
+                </div>
+              </div>
+              <div
+                id="withdraw-error"
+                class="msg msg-error"
+                style="display: none"
+              ></div>
+              <button type="button" class="btn-main" id="withdraw-btn">
+                <span class="btn-label">Withdraw Funds</span>
+                <div class="spinner" style="display: none"></div>
+              </button>
+            </div>
+            <div class="info-card tx-card">
+              <p class="info-title">ACID Guarantee</p>
+              <div class="acid-list">
+                <div class="acid-row">
+                  <span class="acid-letter">A</span>
+                  <div>
+                    <b>Atomicity</b>
+                    <p>
+                      Balance deduction &amp; audit log written together or not
+                      at all.
+                    </p>
+                  </div>
+                </div>
+                <div class="acid-row">
+                  <span class="acid-letter">C</span>
+                  <div>
+                    <b>Consistency</b>
+                    <p>
+                      CHECK constraint prevents balance from going negative.
+                    </p>
+                  </div>
+                </div>
+                <div class="acid-row">
+                  <span class="acid-letter">I</span>
+                  <div>
+                    <b>Isolation</b>
+                    <p>SQLite serializes all writes — no race conditions.</p>
+                  </div>
+                </div>
+                <div class="acid-row">
+                  <span class="acid-letter">D</span>
+                  <div>
+                    <b>Durability</b>
+                    <p>WAL journal ensures survival of system crashes.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- DEPOSIT -->
+        <section id="panel-deposit" class="panel">
+          <div class="panel-head">
+            <h2>Deposit Cash</h2>
+            <p>Maximum ₹2,00,000 per transaction</p>
+          </div>
+          <div class="tx-layout">
+            <div class="tx-card form-card">
+              <p class="chip-label">Quick Amount</p>
+              <div class="amt-chips">
+                <button type="button" class="amt-chip" data-amount="1000">
+                  ₹1,000
+                </button>
+                <button type="button" class="amt-chip" data-amount="5000">
+                  ₹5,000
+                </button>
+                <button type="button" class="amt-chip" data-amount="10000">
+                  ₹10,000
+                </button>
+                <button type="button" class="amt-chip" data-amount="25000">
+                  ₹25,000
+                </button>
+                <button type="button" class="amt-chip" data-amount="50000">
+                  ₹50,000
+                </button>
+                <button type="button" class="amt-chip" data-amount="100000">
+                  ₹1,00,000
+                </button>
+              </div>
+              <hr class="divider" />
+              <div class="field">
+                <label for="deposit-amount">Custom Amount (₹)</label>
+                <div class="rupee-wrap">
+                  <span class="rupee">₹</span
+                  ><input
+                    type="number"
+                    id="deposit-amount"
+                    class="big-input"
+                    placeholder="0"
+                    min="1"
+                    max="200000"
+                  />
+                </div>
+              </div>
+              <div
+                id="deposit-error"
+                class="msg msg-error"
+                style="display: none"
+              ></div>
+              <button type="button" class="btn-main btn-green" id="deposit-btn">
+                <span class="btn-label">Deposit Funds</span>
+                <div class="spinner" style="display: none"></div>
+              </button>
+            </div>
+            <div class="info-card tx-card">
+              <p class="info-title">Secure Deposit</p>
+              <ul class="info-list">
+                <li>💎 Committed atomically — no partial writes</li>
+                <li>📋 Full immutable audit trail stored</li>
+                <li>🔒 Only your session can transact</li>
+                <li>⚡ Real-time balance update on commit</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- TRANSFER -->
+        <section id="panel-transfer" class="panel">
+          <div class="panel-head">
+            <h2>Fund Transfer</h2>
+            <p>Transfer to any NexBank account · Max ₹1,00,000</p>
+          </div>
+          <div class="tx-layout">
+            <div class="tx-card form-card">
+              <div class="field">
+                <label for="transfer-card">Recipient Card Number</label>
+                <input
+                  type="text"
+                  id="transfer-card"
+                  placeholder="4532 XXXX XXXX XXXX"
+                  maxlength="19"
+                  autocomplete="off"
+                  inputmode="numeric"
+                />
+              </div>
+              <div class="field">
+                <label for="transfer-amount">Amount (₹)</label>
+                <div class="rupee-wrap">
+                  <span class="rupee">₹</span
+                  ><input
+                    type="number"
+                    id="transfer-amount"
+                    class="big-input"
+                    placeholder="0"
+                    min="1"
+                    max="100000"
+                  />
+                </div>
+              </div>
+              <div
+                id="transfer-error"
+                class="msg msg-error"
+                style="display: none"
+              ></div>
+              <button
+                type="button"
+                class="btn-main btn-amber"
+                id="transfer-btn"
+              >
+                <span class="btn-label">Transfer Now</span>
+                <div class="spinner" style="display: none"></div>
+              </button>
+              <p class="hint-text">
+                💡 Try transferring between the demo accounts.
+              </p>
+            </div>
+            <div class="info-card tx-card">
+              <p class="info-title">Dual Atomic Transfer</p>
+              <div class="acid-list">
+                <div class="acid-row">
+                  <span class="acid-letter blue">1</span>
+                  <div>
+                    <b>Lock Both Accounts</b>
+                    <p>Both accounts read inside the same transaction.</p>
+                  </div>
+                </div>
+                <div class="acid-row">
+                  <span class="acid-letter blue">2</span>
+                  <div>
+                    <b>Atomic Debit + Credit</b>
+                    <p>
+                      Both updates happen in one transaction — no partial state.
+                    </p>
+                  </div>
+                </div>
+                <div class="acid-row">
+                  <span class="acid-letter blue">3</span>
+                  <div>
+                    <b>Dual Audit Trail</b>
+                    <p>
+                      Both accounts get matching log entries with same Reference
+                      ID.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- HISTORY -->
+        <section id="panel-history" class="panel">
+          <div class="panel-head">
+            <h2>Transaction History</h2>
+            <p>Full immutable audit trail — every action recorded</p>
+          </div>
+          <div class="tx-card history-ctrl">
+            <span class="stat-block"
+              >Total: <strong id="stat-total">—</strong> transactions</span
+            >
+            <button
+              type="button"
+              class="btn-outline"
+              id="load-more-btn"
+              style="display: none"
+            >
+              Load More
+            </button>
+          </div>
+          <div class="tx-card" id="tx-list">
+            <div class="loading-state">
+              <div class="spin-circle"></div>
+              <p>Loading...</p>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- SUCCESS MODAL -->
+    <div id="success-modal" class="modal-overlay" style="display: none">
+      <div class="modal-box">
+        <div class="modal-icon success-icon">✓</div>
+        <h3 class="success-color">Transaction Successful</h3>
+        <p class="modal-sub" id="modal-message"></p>
+        <div class="modal-detail" id="modal-details"></div>
+        <button class="btn-main" id="modal-close">Done</button>
+      </div>
+    </div>
+
+    <!-- ERROR MODAL -->
+    <div id="error-modal" class="modal-overlay" style="display: none">
+      <div class="modal-box">
+        <div class="modal-icon error-icon">✕</div>
+        <h3 class="error-color">Transaction Failed</h3>
+        <p class="modal-sub" id="error-modal-message"></p>
+        <button class="btn-main btn-red" id="error-modal-close">
+          Try Again
+        </button>
+      </div>
+    </div>
+
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+    <script src="app.js"></script>
+  </body>
+</html>

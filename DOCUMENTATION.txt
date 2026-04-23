@@ -1,0 +1,416 @@
+# NexBank ATM System — Full Documentation
+
+
+Stack: Node.js · Express · SQLite (better-sqlite3) · Vanilla HTML/CSS/JS
+URL: http://localhost:3000
+
+═══════════════════════════════════════════════════════════════
+TABLE OF CONTENTS
+═══════════════════════════════════════════════════════════════
+ 1. Project Overview
+ 2. Why This Was Built
+ 3. Project Structure
+ 4. How to Run
+ 5. Database (Tables & Columns)
+ 6. Backend API Reference
+ 7. Frontend Features
+ 8. Security Design
+ 9. ACID Compliance Explained
+10. Demo Accounts
+11. Full Feature Changelog
+12. How to View Physical Data in DB
+
+═══════════════════════════════════════════════════════════════
+1. PROJECT OVERVIEW
+═══════════════════════════════════════════════════════════════
+
+NexBank ATM is a full-stack ATM simulation system that combines:
+
+  - Robust backend: ACID-compliant SQLite transactions that protect
+    against data corruption and race conditions.
+
+  - Modern FinTech UI: Clean dark-themed dashboard with real-time
+    balance, session timer, transaction history, and copy card feature.
+
+  - User account management: Registration, login, JWT session auth.
+
+═══════════════════════════════════════════════════════════════
+2. WHY THIS WAS BUILT
+═══════════════════════════════════════════════════════════════
+
+PROBLEM:
+  Most ATM simulations have two major flaws:
+  1. No data integrity — a crash mid-transaction can deduct money
+     without logging it.
+  2. Poor UX — outdated interfaces that don't reflect modern banking.
+
+SOLUTION:
+  Concern               | Solution Used
+  ─────────────────────────────────────────────────────────────
+  Data corruption       | ACID SQLite transactions (better-sqlite3)
+  Negative balances     | CHECK(balance >= 0) SQL constraint
+  Crash recovery        | WAL (Write-Ahead Logging) mode
+  Brute force attacks   | express-rate-limit on auth endpoints
+  XSS / HTTP headers    | helmet middleware
+  Session hijacking     | JWT tokens with 30-minute expiry
+  Password safety       | bcryptjs hashing (cost factor 10)
+
+═══════════════════════════════════════════════════════════════
+3. PROJECT STRUCTURE
+═══════════════════════════════════════════════════════════════
+
+  atm/
+  ├── server.js          ← Express backend: all API routes + DB logic
+  ├── atm.db             ← SQLite database (auto-created on first run)
+  ├── package.json       ← NPM config & dependencies
+  └── public/
+      ├── index.html     ← Full SPA: login screen + dashboard
+      ├── style.css      ← Dark theme design system
+      └── app.js         ← Frontend logic (auth, transactions, UI)
+
+DEPENDENCIES:
+  Package              | Purpose
+  ─────────────────────────────────────────────────────────────
+  express              | HTTP server & routing
+  better-sqlite3       | Synchronous SQLite (true ACID transactions)
+  bcryptjs             | PIN hashing
+  jsonwebtoken         | JWT session tokens
+  uuid                 | Unique reference IDs per transaction
+  cors                 | Cross-origin resource sharing
+  express-rate-limit   | Brute-force protection
+  helmet               | Secure HTTP headers
+
+═══════════════════════════════════════════════════════════════
+4. HOW TO RUN
+═══════════════════════════════════════════════════════════════
+
+Step 1: Open terminal and go to the project folder
+  cd c:\Users\stayt\OneDrive\Desktop\PREMICA\atm
+
+Step 2: Install dependencies (only once)
+  npm install
+
+Step 3: Start the server
+  node server.js
+
+Step 4: Open browser at:
+  http://localhost:3000
+
+Stop the server: Press Ctrl + C in the terminal.
+
+NOTE: The database (atm.db) is created automatically on first run.
+      3 demo accounts are pre-seeded automatically.
+
+═══════════════════════════════════════════════════════════════
+5. DATABASE
+═══════════════════════════════════════════════════════════════
+
+ENGINE: SQLite (NOT MySQL)
+  - Single file: atm.db in the project root
+  - No separate server needed
+  - Open with: DB Browser for SQLite (https://sqlitebrowser.org/)
+    or the "SQLite Viewer" VS Code extension
+
+DATABASE SETTINGS:
+  PRAGMA journal_mode = WAL;     -- Crash-safe journaling
+  PRAGMA foreign_keys = ON;      -- Relational integrity
+  PRAGMA synchronous = FULL;     -- Max durability on disk
+
+─────────────────────────────────────────────────────────────
+TABLE: accounts
+─────────────────────────────────────────────────────────────
+  Column        | Type        | Notes
+  ──────────────────────────────────────────────────────────
+  id            | TEXT (UUID) | Primary key, auto-generated
+  card_number   | TEXT UNIQUE | 16-digit e.g. "4532 1234 5678 9012"
+  pin_hash      | TEXT        | bcrypt hash — never stored plain
+  full_name     | TEXT        | User's full name
+  balance       | REAL        | CHECK(balance >= 0) enforced by DB
+  account_type  | TEXT        | 'savings' or 'current'
+  is_active     | INTEGER     | 1=active, 0=disabled
+  created_at    | TEXT        | ISO timestamp
+  last_login    | TEXT        | Updated on every login atomically
+
+─────────────────────────────────────────────────────────────
+TABLE: transactions  (immutable audit trail)
+─────────────────────────────────────────────────────────────
+  Column         | Type        | Notes
+  ──────────────────────────────────────────────────────────
+  id             | TEXT (UUID) | Primary key
+  account_id     | TEXT        | Foreign key -> accounts.id
+  type           | TEXT        | deposit / withdrawal /
+                 |             | transfer_in / transfer_out /
+                 |             | balance_check
+  amount         | REAL        | NULL for balance checks
+  balance_before | REAL        | Balance before the transaction
+  balance_after  | REAL        | Balance after the transaction
+  status         | TEXT        | success / failed / rolled_back
+  description    | TEXT        | Human-readable note
+  reference_id   | TEXT        | e.g. WD-60F3F571, TF-DE24694E
+  ip_address     | TEXT        | Client IP for audit
+  created_at     | TEXT        | ISO timestamp
+
+─────────────────────────────────────────────────────────────
+TABLE: sessions
+─────────────────────────────────────────────────────────────
+  Column      | Type   | Notes
+  ──────────────────────────────────────────────────────────
+  id          | TEXT   | JWT session ID
+  account_id  | TEXT   | Foreign key -> accounts.id
+  created_at  | TEXT   | Session creation time
+  expires_at  | TEXT   | 30 minutes after creation
+  is_active   | INTEGER| 0 = invalidated on logout/re-login
+
+═══════════════════════════════════════════════════════════════
+6. BACKEND API REFERENCE
+═══════════════════════════════════════════════════════════════
+
+BASE URL: http://localhost:3000/api
+
+─────────────────────────────────────────────────────────────
+PUBLIC ENDPOINTS (no token required)
+─────────────────────────────────────────────────────────────
+
+POST /api/auth/register
+  Create a new bank account. Card number is auto-generated.
+  Request:  { "fullName": "Ravi Kumar", "pin": "1234",
+              "confirmPin": "1234", "accountType": "savings" }
+  Response: { "success": true, "cardNumber": "4532 XXXX XXXX XXXX",
+              "accountType": "savings", "fullName": "Ravi Kumar" }
+  Rules:
+    - Full name must have first + last name
+    - PIN must be exactly 4 digits
+    - Both PINs must match
+    - accountType must be "savings" or "current"
+    - Starting balance is Rs 0
+
+POST /api/auth/login
+  Authenticate with card number + PIN. Returns JWT token.
+  Request:  { "cardNumber": "4532 1234 5678 9012", "pin": "1234" }
+  Response: { "token": "eyJ...", "account": { fullName, balance, ... } }
+  Rate limit: 20 requests per 15 minutes
+
+GET /api/accounts/list
+  Returns all registered (non-demo) accounts for login quick-fill.
+  Response: { "accounts": [{ full_name, card_number, account_type }] }
+
+GET /api/health
+  Server status check.
+  Response: { "status": "ok", "accounts": 4, "timestamp": "..." }
+
+─────────────────────────────────────────────────────────────
+PROTECTED ENDPOINTS (require: Authorization: Bearer <token>)
+─────────────────────────────────────────────────────────────
+
+POST /api/auth/logout
+  Marks the current session as inactive in the database.
+
+GET /api/account/balance
+  Returns live balance and logs a balance_check audit entry.
+  Response: { "balance": 25000.50, "timestamp": "..." }
+
+POST /api/transaction/withdraw
+  ACID transaction. Deducts balance + writes audit log atomically.
+  Request:  { "amount": 2000 }
+  Response: { "success": true, "referenceId": "WD-XXXXXXXX",
+              "newBalance": 23000.50, "amountDispensed": 2000 }
+  Rules:
+    - Must be a multiple of Rs 100
+    - Maximum Rs 50,000 per transaction
+    - Rejected if insufficient funds
+
+POST /api/transaction/deposit
+  Request:  { "amount": 5000 }
+  Rules:    Maximum Rs 2,00,000 per transaction
+
+POST /api/transaction/transfer
+  Dual atomic transaction. Debit sender + credit recipient in ONE
+  SQLite transaction. If either fails, both are rolled back.
+  Both accounts get audit entries with SAME reference ID.
+  Request:  { "toCardNumber": "4532 XXXX XXXX XXXX", "amount": 1000 }
+  Rules:    Maximum Rs 1,00,000 per transfer
+  Rate limit: 30 transaction requests per minute
+
+GET /api/transactions/history?limit=10&offset=0
+  Paginated transaction history (excludes balance_check entries).
+
+GET /api/account/mini-statement
+  Last 5 transactions (shown on Overview panel).
+
+═══════════════════════════════════════════════════════════════
+7. FRONTEND FEATURES
+═══════════════════════════════════════════════════════════════
+
+LOGIN SCREEN
+  - Login tab: Card number + 4-digit PIN with show/hide toggle
+  - Create Account tab: Full name, account type, PIN, confirm PIN
+  - Demo account quick-fill: Click to auto-fill card + PIN
+  - Registered accounts quick-fill: Shows user-created accounts
+    fetched live from DB. Clicking fills card number only;
+    user must enter their own PIN.
+
+DASHBOARD PANELS
+  Panel     | Key Features
+  ──────────────────────────────────────────────────────────
+  Overview  | Animated balance counter, FULL card number with
+            | Copy button, account type badge, quick action grid,
+            | last 5 transactions (mini statement)
+  Withdraw  | Quick amount chips (Rs500-Rs20K), custom input,
+            | ACID guarantee info panel
+  Deposit   | Quick amount chips (Rs1K-Rs1L), custom input
+  Transfer  | Recipient card input (auto-formats), amount field,
+            | success modal with reference ID
+  History   | Full paginated audit trail, Load More button,
+            | reference IDs, balance-after column per transaction
+
+COPY CARD NUMBER FEATURE
+  On the Overview panel, the user's FULL card number is shown so they
+  can share it with others to receive money transfers.
+  - Clicking "Copy" copies the full card number to clipboard
+  - Button turns green and shows "Copied!" for 2 seconds
+
+SESSION MANAGEMENT
+  - 30-minute countdown timer visible in sidebar
+  - Timer turns amber at 5 minutes remaining
+  - Timer turns red at 1 minute remaining
+  - Auto-logout when timer hits 0:00
+  - Session marked inactive in DB on logout
+
+═══════════════════════════════════════════════════════════════
+8. SECURITY DESIGN
+═══════════════════════════════════════════════════════════════
+
+  Layer                  | How It Works
+  ─────────────────────────────────────────────────────────────
+  bcryptjs (cost 10)     | Hashes PINs. Even if DB is stolen,
+                         | PINs cannot be reversed.
+  jsonwebtoken           | 30-min expiry. Verified against live
+                         | session row in DB every request.
+  express-rate-limit     | Login: 20/15min. Tx: 30/min.
+  helmet                 | Sets HSTS, X-Frame-Options, etc.
+  CHECK(balance >= 0)    | DB-level guarantee, not just app-level.
+  Session invalidation   | New login invalidates all old sessions.
+  No plain-text PINs     | Never stored, logged, or returned.
+
+═══════════════════════════════════════════════════════════════
+9. ACID COMPLIANCE EXPLAINED
+═══════════════════════════════════════════════════════════════
+
+better-sqlite3 is SYNCHRONOUS — all DB operations are serialized.
+This gives true ACID guarantees.
+
+  A — Atomicity:    Balance update + audit log written together
+                    or not at all. No partial writes.
+  C — Consistency:  CHECK(balance >= 0) always enforced by SQLite.
+  I — Isolation:    SQLite serializes all writes. No two transactions
+                    run at the same time.
+  D — Durability:   WAL journal + FULL synchronous pragma means
+                    committed data survives server crashes.
+
+EXAMPLE: Withdrawal Code Flow
+─────────────────────────────
+  db.transaction(() => {
+    // 1. Read current balance inside the transaction
+    const account = db.prepare('SELECT balance FROM accounts WHERE id = ?').get(id);
+
+    // 2. Check funds
+    if (account.balance < amount) throw new Error('Insufficient funds');
+
+    // 3. Deduct balance
+    db.prepare('UPDATE accounts SET balance = ? WHERE id = ?').run(newBalance, id);
+
+    // 4. Write immutable audit log
+    db.prepare('INSERT INTO transactions ...').run(...);
+
+    // If step 3 OR step 4 throws → SQLite rolls back BOTH automatically
+  })();
+
+EXAMPLE: Transfer Code Flow (Dual Atomic)
+─────────────────────────────────────────
+  db.transaction(() => {
+    const sender    = db.prepare('SELECT balance FROM accounts WHERE id = ?').get(senderId);
+    const recipient = db.prepare('SELECT * FROM accounts WHERE card_number = ?').get(toCard);
+
+    if (sender.balance < amount) throw new Error('Insufficient funds');
+
+    // Debit sender
+    db.prepare('UPDATE accounts SET balance = ? WHERE id = ?').run(senderNewBal, senderId);
+    // Credit recipient
+    db.prepare('UPDATE accounts SET balance = ? WHERE id = ?').run(recipientNewBal, recipientId);
+
+    // Two audit log entries with same reference ID
+    db.prepare('INSERT INTO transactions ...').run(senderId, 'transfer_out', refId, ...);
+    db.prepare('INSERT INTO transactions ...').run(recipientId, 'transfer_in', refId, ...);
+
+    // Any failure → all 4 operations rolled back
+  })();
+
+═══════════════════════════════════════════════════════════════
+10. DEMO ACCOUNTS
+═══════════════════════════════════════════════════════════════
+
+Pre-seeded into atm.db on first server startup:
+
+  Name          | Card Number           | PIN  | Type    | Balance
+  ─────────────────────────────────────────────────────────────────
+  Alex Johnson  | 4532 1234 5678 9012   | 1234 | Savings | Rs 25,000.50
+  Priya Sharma  | 4532 9876 5432 1000   | 5678 | Current | Rs 85,750.00
+  Marcus Lee    | 4532 1111 2222 3333   | 9999 | Savings | Rs  5,200.75
+
+NOTE: Balances change permanently as you transact. All data stored in atm.db.
+
+═══════════════════════════════════════════════════════════════
+11. FULL FEATURE CHANGELOG
+═══════════════════════════════════════════════════════════════
+
+  #  | Feature                        | Details
+  ────────────────────────────────────────────────────────────────
+  1  | ACID Transactions               | All financial ops use SQLite tx blocks
+  2  | WAL Mode                        | Crash-safe DB journaling
+  3  | bcrypt PIN hashing              | Cost factor 10, never reversible
+  4  | JWT Sessions                    | 30-min tokens, server-side verify
+  5  | Rate Limiting                   | Auth: 20/15min · Tx: 30/min
+  6  | Helmet Security Headers         | HSTS, X-Frame, CSP, etc.
+  7  | Cash Withdrawal                 | Rs100 multiples, Rs50K max, ACID-safe
+  8  | Cash Deposit                    | Rs2L max, ACID-safe
+  9  | Fund Transfer                   | Dual atomic debit+credit, same ref ID
+  10 | Transaction History             | Paginated, immutable audit trail
+  11 | Balance Check Logging           | Every balance check logged to DB
+  12 | Mini Statement (Overview)       | Last 5 transactions on dashboard
+  13 | Account Registration            | New users self-register, card auto-gen
+  14 | Registered Accounts Quick-Fill  | Login shows user-created accounts
+  15 | Full Card Number Display        | Shown on dashboard overview
+  16 | Copy Card Number Button         | 1-click clipboard copy
+  17 | Session Countdown Timer         | 30min with colour warnings
+  18 | Auto-Logout on Expiry           | Session cleared in DB too
+  19 | Responsive Mobile UI            | Sidebar, hamburger, responsive grid
+  20 | Animated Balance Counter        | Smooth number animation on load/refresh
+  21 | Quick Amount Chips              | One-click amount presets on tx forms
+  22 | Success/Error Modals            | Every transaction shows result modal
+  23 | Reference IDs                   | Every tx gets a unique ref ID (WD-, DP-, TF-)
+
+═══════════════════════════════════════════════════════════════
+12. HOW TO VIEW PHYSICAL DATA IN DB
+═══════════════════════════════════════════════════════════════
+
+OPTION A: DB Browser for SQLite (Best — like MySQL Workbench)
+  1. Download: https://sqlitebrowser.org/dl/
+  2. Click "Open Database"
+  3. Open: c:\Users\stayt\OneDrive\Desktop\PREMICA\atm\atm.db
+  4. Browse tables, run SQL queries, see all rows visually
+
+OPTION B: VS Code Extension
+  1. Install "SQLite Viewer" by Florian Klampfer
+  2. Open atm.db directly inside VS Code
+
+OPTION C: Terminal Quick Check
+  node -e "
+    const db = require('better-sqlite3')('./atm.db');
+    console.table(db.prepare('SELECT card_number, full_name, balance FROM accounts').all());
+    console.table(db.prepare('SELECT type, amount, reference_id, created_at FROM transactions ORDER BY created_at DESC LIMIT 10').all());
+  "
+
+═══════════════════════════════════════════════════════════════
+NexBank ATM System — Documentation
+Built for PREMICA Project · April 2026
+═══════════════════════════════════════════════════════════════

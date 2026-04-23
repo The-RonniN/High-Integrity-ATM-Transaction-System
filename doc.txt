@@ -1,0 +1,29 @@
+Let me start the server and write the documentation simultaneously:
+
+Ran command: `node server.js`
+
+Server is running! Let me fix the artifact path:
+
+Edited ATM_System_Documentation.md
+
+The server is running and the documentation is ready. Here's a summary of what's covered:
+
+---
+
+## 📄 Documentation Complete
+
+The full documentation covers **12 sections**:
+
+| Section | What's Inside |
+|---------|--------------|
+| **Project Overview** | What NexBank ATM is and why it was built |
+| **Project Structure** | All files and their purpose |
+| **How to Run** | `node server.js` → `http://localhost:3000` |
+| **Database** | All 3 tables (`accounts`, `transactions`, `sessions`) with every column explained |
+| **API Reference** | All 10 endpoints — public & protected, with request/response examples |
+| **Frontend Features** | Login, dashboard panels, card copy, session timer |
+| **Security Design** | bcrypt, JWT, rate limiting, helmet, CHECK constraints |
+| **ACID Compliance** | How atomicity/consistency/isolation/durability are enforced with code example |
+| **Demo Accounts** | All 3 demo cards with PINs and balances |
+| **Feature Changelog** | All 18 features built — listed in order |
+| **View the Database** | 3 ways to browse physical data (DB Browser, VS Code, terminal) |
