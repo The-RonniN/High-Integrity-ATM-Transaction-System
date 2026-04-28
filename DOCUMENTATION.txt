@@ -10,6 +10,7 @@ TABLE OF CONTENTS
  1. Project Overview
  2. Why This Was Built
  3. Project Structure
+
  4. How to Run
  5. Database (Tables & Columns)
  6. Backend API Reference

@@ -26,4 +26,4 @@ The full documentation covers **12 sections**:
 | **ACID Compliance** | How atomicity/consistency/isolation/durability are enforced with code example |
 | **Demo Accounts** | All 3 demo cards with PINs and balances |
 | **Feature Changelog** | All 18 features built — listed in order |
-| **View the Database** | 3 ways to browse physical data (DB Browser, VS Code, terminal) |
+| **View the Database** | 3 ways to browse physical data (DB Browser, VS Code, terminal) |+-

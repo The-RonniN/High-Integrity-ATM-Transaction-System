@@ -97,7 +97,7 @@ const seedAccounts = db.transaction(() => {
       {
         card: "4532 1234 5678 9012",
         pin: "1234",
-        name: "Alex Johnson",
+        name: "Amruta Patil",
         balance: 25000.5,
         type: "savings",
       },
@@ -111,7 +111,7 @@ const seedAccounts = db.transaction(() => {
       {
         card: "4532 1111 2222 3333",
         pin: "9999",
-        name: "Marcus Lee",
+        name: "Rupali Taware",
         balance: 5200.75,
         type: "savings",
       },
